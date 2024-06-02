@@ -9,26 +9,25 @@ public:
     int sleepTimeIncrement = 1;
     int sleepTimeDecrement = 1;
 
-    RaceProblemsEvolved(int sleepTimeIncrement = 1, int sleepTimeDecrement = 1, sem_t* mutex = nullptr) : mutex(mutex), sleepTimeIncrement(sleepTimeIncrement), sleepTimeDecrement(sleepTimeDecrement) {}
+    RaceProblemsEvolved(int sleepTimeIncrement = 1, int sleepTimeDecrement = 1, sem_t* mutex = nullptr)
+        : mutex(mutex), sleepTimeIncrement(sleepTimeIncrement), sleepTimeDecrement(sleepTimeDecrement) {}
 
     void increment() {
-        int reg;
-        reg = this->iprim++;
-        sem_wait(mutex); // Wait for the semaphore (lock)
-        sleep(this->sleepTimeIncrement);
-        reg++;
-        this->iprim = reg;
-        sem_post(mutex); // Release the semaphore (unlock)
+        sem_wait(mutex); 
+        int reg = this->iprim;
+        sleep(this->sleepTimeIncrement); 
+        reg++; 
+        this->iprim = reg; 
+        sem_post(mutex); 
     }
 
     void decrement() {
-        int reg;
-        reg = this->iprim--;
-        sem_wait(mutex); // Wait for the semaphore (lock)
-        sleep(this->sleepTimeDecrement);
-        reg--;
-        this->iprim = reg;
-        sem_post(mutex); // Release the semaphore (unlock)
+        sem_wait(mutex); 
+        int reg = this->iprim;
+        sleep(this->sleepTimeDecrement); 
+        reg--; 
+        this->iprim = reg; 
+        sem_post(mutex); 
     }
 
 private:
@@ -37,18 +36,17 @@ private:
 
 int main() {
     sem_t mutex;
-    sem_init(&mutex, 0, 1); // Initialize the semaphore with initial value 1
+    sem_init(&mutex, 0, 1);
+    RaceProblemsEvolved rpe(1, 5, &mutex);
 
-    RaceProblemsEvolved rpe(1, 2, &mutex);
-
-    // Create multiple threads that access shared resource without proper synchronization
-    std::thread t4(&RaceProblemsEvolved::decrement, &rpe);
+    std::thread t4(&RaceProblemsEvolved::increment, &rpe);
     std::thread t5(&RaceProblemsEvolved::decrement, &rpe);
-    std::thread t3(&RaceProblemsEvolved::increment, &rpe);
+    std::thread t6(&RaceProblemsEvolved::decrement, &rpe);
 
-    t3.join();
+
     t4.join();
     t5.join();
+    t6.join();
 
     std::cout << "Value of iprim: " << rpe.iprim << std::endl;
     sem_destroy(&mutex);

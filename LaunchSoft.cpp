@@ -20,13 +20,13 @@ class ApplicationSequence{
 
         void LaunchFirefox(){
             sem_wait(&sem_firefox);
-            std::system("firefox");
+            std::system("pip");
             std::cout << "Firefox Launched" << std::endl;
         }   
 
         void LaunchChrome(){
             sem_wait(&sem_chrome);
-            std::system("chrome");
+            std::system("npm");
             std::cout << "Chrome Launched" << std::endl;
         }
 
@@ -51,7 +51,7 @@ class ApplicationSequence{
 };
 
 
-void main(){
+int main(){
     ApplicationSequence app;
     std::thread t1(&ApplicationSequence::LaunchFirefox, &app);
     std::thread t2(&ApplicationSequence::LaunchChrome, &app);
@@ -62,4 +62,6 @@ void main(){
     t1.join();
     t2.join();
     t3.join();
+
+    return 0;
 }
